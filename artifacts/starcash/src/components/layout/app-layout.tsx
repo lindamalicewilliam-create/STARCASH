@@ -9,7 +9,8 @@ import {
   History, 
   LogOut,
   Wallet,
-  Menu
+  Menu,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -33,6 +34,7 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
         { href: "/referrals", label: "Referrals", icon: Users },
         { href: "/withdraw", label: "Withdraw", icon: Wallet },
         { href: "/transactions", label: "Transactions", icon: History },
+        { href: "/profile", label: "Profile", icon: UserCircle },
       ];
 
   return (

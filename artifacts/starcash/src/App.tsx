@@ -12,6 +12,7 @@ import Dashboard from '@/pages/dashboard';
 import Referrals from '@/pages/referrals';
 import Transactions from '@/pages/transactions';
 import Withdraw from '@/pages/withdraw';
+import Profile from '@/pages/profile';
 
 import AdminDashboard from '@/pages/admin/dashboard';
 import AdminUsers from '@/pages/admin/users';
@@ -30,6 +31,7 @@ function ProtectedRoutes() {
         <Route path="/referrals" component={Referrals} />
         <Route path="/transactions" component={Transactions} />
         <Route path="/withdraw" component={Withdraw} />
+        <Route path="/profile" component={Profile} />
         
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/users" component={AdminUsers} />
