@@ -3,20 +3,34 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: StarCash Affiliate Earning Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User profile and dashboard
+  - name: referrals
+    description: Referral system
+  - name: transactions
+    description: Transaction history
+  - name: withdrawals
+    description: Withdrawal requests
+  - name: admin
+    description: Admin operations
+  - name: coupons
+    description: Coupon management
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +38,429 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error or invalid coupon
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /users/me/dashboard:
+    get:
+      operationId: getDashboard
+      tags: [users]
+      summary: Get user dashboard summary
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          description: Unauthorized
+
+  /users/me/referrals:
+    get:
+      operationId: getMyReferrals
+      tags: [referrals]
+      summary: Get the current user's referral list
+      responses:
+        "200":
+          description: Referral list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Referral"
+        "401":
+          description: Unauthorized
+
+  /users/me/transactions:
+    get:
+      operationId: getMyTransactions
+      tags: [transactions]
+      summary: Get transaction history for current user
+      responses:
+        "200":
+          description: Transactions list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "401":
+          description: Unauthorized
+
+  /withdrawals:
+    get:
+      operationId: getMyWithdrawals
+      tags: [withdrawals]
+      summary: Get current user's withdrawal requests
+      responses:
+        "200":
+          description: Withdrawal list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: createWithdrawal
+      tags: [withdrawals]
+      summary: Submit a withdrawal request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalInput"
+      responses:
+        "201":
+          description: Withdrawal request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+        "400":
+          description: Insufficient balance or validation error
+        "401":
+          description: Unauthorized
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get platform-wide statistics
+      responses:
+        "200":
+          description: Admin statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "403":
+          description: Forbidden
+
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: List all users
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by username, email, or name
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, suspended]
+          description: Filter by status
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "403":
+          description: Forbidden
+
+  /admin/users/{id}:
+    get:
+      operationId: getAdminUser
+      tags: [admin]
+      summary: Get a single user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAdminUser
+      tags: [admin]
+      summary: Update a user (suspend/activate, edit profile, adjust balance)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteAdminUser
+      tags: [admin]
+      summary: Delete a user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+
+  /admin/coupons:
+    get:
+      operationId: getAdminCoupons
+      tags: [coupons]
+      summary: List all coupons
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [used, unused, disabled]
+          description: Filter by coupon status
+      responses:
+        "200":
+          description: Coupon list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Coupon"
+    post:
+      operationId: createCoupon
+      tags: [coupons]
+      summary: Create a single coupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CouponInput"
+      responses:
+        "201":
+          description: Created coupon
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+
+  /admin/coupons/bulk:
+    post:
+      operationId: bulkCreateCoupons
+      tags: [coupons]
+      summary: Generate multiple coupons at once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkCouponInput"
+      responses:
+        "201":
+          description: Created coupons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Coupon"
+
+  /admin/coupons/{id}:
+    patch:
+      operationId: updateCoupon
+      tags: [coupons]
+      summary: Update or disable a coupon
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CouponUpdate"
+      responses:
+        "200":
+          description: Updated coupon
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+    delete:
+      operationId: deleteCoupon
+      tags: [coupons]
+      summary: Delete a coupon
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+
+  /admin/withdrawals:
+    get:
+      operationId: getAdminWithdrawals
+      tags: [admin]
+      summary: List all withdrawal requests
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, approved, rejected, completed]
+          description: Filter by status
+      responses:
+        "200":
+          description: Withdrawal list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminWithdrawal"
+
+  /admin/withdrawals/{id}:
+    patch:
+      operationId: updateWithdrawal
+      tags: [admin]
+      summary: Approve, reject or mark a withdrawal as completed
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalStatusUpdate"
+      responses:
+        "200":
+          description: Updated withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminWithdrawal"
+
+  /admin/transactions:
+    get:
+      operationId: getAdminTransactions
+      tags: [admin]
+      summary: List all transactions across the platform
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          description: Filter by user ID
+      responses:
+        "200":
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +471,369 @@ components:
       required:
         - status
 
+    User:
+      type: object
+      required: [id, username, email, fullName, phone, role, status, referralCode, referralLink, walletBalance, totalEarnings, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        status:
+          type: string
+          enum: [active, suspended]
+        referralCode:
+          type: string
+        referralLink:
+          type: string
+        walletBalance:
+          type: number
+        totalEarnings:
+          type: number
+        pendingEarnings:
+          type: number
+        withdrawableBalance:
+          type: number
+        totalReferrals:
+          type: integer
+        activeReferrals:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    RegisterInput:
+      type: object
+      required: [fullName, username, email, phone, password, confirmPassword, couponCode]
+      properties:
+        fullName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+          minLength: 6
+        confirmPassword:
+          type: string
+        referralCode:
+          type: ["string", "null"]
+        couponCode:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    Dashboard:
+      type: object
+      required: [walletBalance, totalEarnings, pendingEarnings, withdrawableBalance, totalReferrals, activeReferrals, totalBonusEarned, membershipStatus]
+      properties:
+        walletBalance:
+          type: number
+        totalEarnings:
+          type: number
+        pendingEarnings:
+          type: number
+        withdrawableBalance:
+          type: number
+        totalReferrals:
+          type: integer
+        activeReferrals:
+          type: integer
+        totalBonusEarned:
+          type: number
+        membershipStatus:
+          type: string
+          enum: [active, suspended]
+        referralCode:
+          type: string
+        referralLink:
+          type: string
+        recentTransactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+
+    Referral:
+      type: object
+      required: [id, referredUserId, referredUsername, referredFullName, bonusAmount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        referredUserId:
+          type: integer
+        referredUsername:
+          type: string
+        referredFullName:
+          type: string
+        bonusAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, active]
+        createdAt:
+          type: string
+          format: date-time
+
+    Transaction:
+      type: object
+      required: [id, type, amount, status, description, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: ["integer", "null"]
+        type:
+          type: string
+          enum: [welcome_bonus, referral_bonus, withdrawal, deposit, activation]
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, successful, failed, reversed]
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Withdrawal:
+      type: object
+      required: [id, userId, bankName, accountName, accountNumber, amount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        bankName:
+          type: string
+        accountName:
+          type: string
+        accountNumber:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, rejected, completed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WithdrawalInput:
+      type: object
+      required: [bankName, accountName, accountNumber, amount]
+      properties:
+        bankName:
+          type: string
+        accountName:
+          type: string
+        accountNumber:
+          type: string
+        amount:
+          type: number
+          minimum: 6
+
+    Coupon:
+      type: object
+      required: [id, code, value, status, expiresAt, createdAt]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        value:
+          type: number
+        status:
+          type: string
+          enum: [unused, used, disabled]
+        usedByUserId:
+          type: ["integer", "null"]
+        usedByUsername:
+          type: ["string", "null"]
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    CouponInput:
+      type: object
+      required: [value]
+      properties:
+        code:
+          type: ["string", "null"]
+          description: Optional custom code; auto-generated if omitted
+        value:
+          type: number
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+
+    BulkCouponInput:
+      type: object
+      required: [count, value]
+      properties:
+        count:
+          type: integer
+          minimum: 1
+          maximum: 500
+        value:
+          type: number
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+
+    CouponUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [unused, disabled]
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+
+    AdminUser:
+      type: object
+      required: [id, username, email, fullName, phone, role, status, referralCode, walletBalance, totalEarnings, totalReferrals, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        status:
+          type: string
+          enum: [active, suspended]
+        referralCode:
+          type: string
+        referredBy:
+          type: ["string", "null"]
+        walletBalance:
+          type: number
+        totalEarnings:
+          type: number
+        totalReferrals:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminUserUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, suspended]
+        fullName:
+          type: string
+        phone:
+          type: string
+        walletBalance:
+          type: number
+        role:
+          type: string
+          enum: [user, admin]
+
+    WithdrawalStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected, completed]
+
+    AdminWithdrawal:
+      type: object
+      required: [id, userId, username, fullName, bankName, accountName, accountNumber, amount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        username:
+          type: string
+        fullName:
+          type: string
+        bankName:
+          type: string
+        accountName:
+          type: string
+        accountNumber:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, rejected, completed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AdminStats:
+      type: object
+      required: [totalUsers, activeUsers, totalEarningsPaid, totalReferralBonuses, totalCoupons, usedCoupons, dailyRegistrations, monthlyRevenue, pendingWithdrawals, totalWithdrawals]
+      properties:
+        totalUsers:
+          type: integer
+        activeUsers:
+          type: integer
+        totalEarningsPaid:
+          type: number
+        totalReferralBonuses:
+          type: number
+        totalCoupons:
+          type: integer
+        usedCoupons:
+          type: integer
+        dailyRegistrations:
+          type: integer
+        monthlyRevenue:
+          type: number
+        pendingWithdrawals:
+          type: integer
+        totalWithdrawals:
+          type: number

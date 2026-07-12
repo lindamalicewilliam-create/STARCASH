@@ -1,0 +1,171 @@
+Develop a secure, modern, and scalable affiliate earning web application called StarCash. The platform should enable users to earn referral commissions by inviting new members to join using their unique referral links. The application should feature a clean, responsive user interface, robust authentication, secure payment tracking, and an intuitive dashboard for both users and administrators.
+
+User Registration & Account Activation
+
+Create a registration system where users can sign up by providing:
+
+Full Name
+Username
+Email Address
+Phone Number
+Password & Confirm Password
+Referral Code (optional)
+Activation Coupon Code (required)
+Account Activation
+Every new user must enter a valid activation coupon code during registration.
+The coupon code must be verified against the database before the account is activated.
+If the coupon code is invalid or has already been used, registration should not be completed.
+Once verified, the user's dashboard is activated immediately.
+Welcome Bonus
+
+After successful account activation:
+
+Automatically credit the new user with a $1 Welcome Bonus.
+Display this amount in the Referral Wallet.
+Record the transaction in the user's transaction history.
+
+Example:
+
+Transaction:
+Welcome Bonus
++$1.00
+Status: Successful
+Referral System
+
+Every registered user should automatically receive:
+
+A unique Referral ID
+A unique Referral Link
+
+Example:
+
+https://starcash.com/register?ref=STAR12345
+
+The referral link should be visible within the user's dashboard and include options to:
+
+Copy Link
+Share via WhatsApp
+Share via Facebook
+Share via Telegram
+Share via X (Twitter)
+Share via Email
+Referral Reward Logic
+
+When an existing user invites someone using their referral link:
+
+Referrer Rewards
+
+After the referred person:
+
+Registers successfully,
+Enters a valid activation coupon,
+Activates their account,
+
+The referrer should automatically receive:
+
++$3 Referral Bonus
+
+Example:
+
+Previous Balance:
+
+$1
+
+After Referral:
+
+$4
+New User Rewards
+
+The newly registered user should also receive:
+
++$1 Welcome Bonus
+
+This ensures:
+
+Referrer earns $3
+New member receives $1
+User Dashboard
+
+The dashboard should display:
+
+Wallet Summary
+Referral Wallet Balance
+Total Earnings
+Pending Earnings
+Withdrawable Balance
+Statistics
+Total Referrals
+Active Referrals
+Total Bonus Earned
+Coupon Status
+Membership Status
+Referral Section
+Referral Link
+Referral Code
+Copy Button
+Share Buttons
+Transaction History
+
+Display:
+
+Welcome Bonus
+Referral Bonuses
+Withdrawals
+Deposits
+Activation Payments
+Withdrawal System
+
+Allow users to withdraw earnings after reaching a configurable minimum withdrawal threshold (e.g., $6).
+
+Withdrawal form should include:
+
+Bank Name
+Account Name
+Account Number
+Amount
+
+All withdrawal requests should remain Pending until approved by the administrator.
+
+Admin Dashboard
+
+The administrator should be able to manage the entire platform through a comprehensive dashboard.
+
+Features include:
+
+User Management
+View all users
+Search users
+Suspend or activate accounts
+Delete users
+Edit user profiles
+Coupon Management
+Create activation coupon codes
+Generate coupons in bulk
+Set coupon value
+Set expiration dates
+Track used and unused coupons
+Disable coupons
+Referral Management
+View referral network
+Monitor referral bonuses
+Prevent duplicate or fraudulent referrals
+Wallet Management
+View wallet balances
+Adjust user balances
+Reverse incorrect transactions
+Withdrawal Management
+View withdrawal requests
+Approve or reject withdrawals
+Mark payments as completed
+Reports & Analytics
+
+Display:
+
+Total Users
+Active Users
+Total Earnings Paid
+Total Referral Bonuses
+Coupon Sales
+Daily Registrations
+Monthly Revenue
+Withdrawal Statistics

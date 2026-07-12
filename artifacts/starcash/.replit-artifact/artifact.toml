@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "StarCash"
+version = "1.0.0"
+id = "artifacts/starcash"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25131
+
+[services.development]
+run = "pnpm --filter @workspace/starcash run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/starcash", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/starcash/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25131"
+BASE_PATH = "/"
