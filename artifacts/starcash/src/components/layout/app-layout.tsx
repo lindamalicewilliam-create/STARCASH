@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
   const [location] = useLocation();
@@ -67,7 +68,11 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
         })}
       </div>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-1">
+        <div className="flex items-center justify-between px-3 py-1.5">
+          <span className="text-xs text-sidebar-foreground/50 font-medium">Theme</span>
+          <ThemeToggle className="text-sidebar-foreground/70 hover:text-sidebar-foreground" />
+        </div>
         <Button 
           variant="ghost" 
           className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground" 
@@ -86,9 +91,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
 
   if (isLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-    </div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
   }
 
   if (!user) {
@@ -112,16 +119,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
             </div>
             <span className="font-bold">StarCash</span>
           </div>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 border-r-0">
-              <SidebarContent isAdmin={isAdmin} />
-            </SheetContent>
-          </Sheet>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64 border-r-0">
+                <SidebarContent isAdmin={isAdmin} />
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
 
         <main className="flex-1 overflow-y-auto">
