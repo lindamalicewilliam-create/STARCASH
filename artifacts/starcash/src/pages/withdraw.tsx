@@ -11,7 +11,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Wallet } from "lucide-react";
+import { Wallet, CalendarClock } from "lucide-react";
+
+function isSunday() {
+  return new Date().getDay() === 0;
+}
+
+function daysUntilSunday() {
+  const day = new Date().getDay(); // 0=Sun … 6=Sat
+  return day === 0 ? 0 : 7 - day;
+}
 
 const withdrawalSchema = z.object({
   bankName: z.string().min(2, "Bank name is required"),
@@ -29,6 +38,9 @@ export default function Withdraw() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const today = isSunday();
+  const daysLeft = daysUntilSunday();
+
   const form = useForm<WithdrawalValues>({
     resolver: zodResolver(withdrawalSchema),
     defaultValues: {
@@ -42,6 +54,15 @@ export default function Withdraw() {
   const withdrawableBalance = dashboard?.withdrawableBalance || 0;
 
   const onSubmit = (values: WithdrawalValues) => {
+    if (!isSunday()) {
+      toast({
+        variant: "destructive",
+        title: "Not Available",
+        description: "Payout requests are only accepted on Sundays.",
+      });
+      return;
+    }
+
     if (values.amount > withdrawableBalance) {
       form.setError("amount", { message: "Amount exceeds withdrawable balance" });
       return;
@@ -74,6 +95,21 @@ export default function Withdraw() {
         <p className="text-muted-foreground mt-1">Request a payout directly to your bank account.</p>
       </div>
 
+      {/* Sunday-only notice */}
+      {!today && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3.5 text-sm text-amber-600 dark:text-amber-400">
+          <CalendarClock className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-semibold">Payouts open on Sundays only</p>
+            <p className="text-xs mt-0.5 opacity-80">
+              {daysLeft === 1
+                ? "Come back tomorrow — Sunday is just 1 day away."
+                : `Next payout window opens in ${daysLeft} days.`}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <Card className="bg-gradient-to-br from-sidebar to-background border-primary/20">
@@ -90,10 +126,14 @@ export default function Withdraw() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={!today ? "opacity-60 pointer-events-none select-none" : ""}>
             <CardHeader>
               <CardTitle>Request Payout</CardTitle>
-              <CardDescription>Minimum withdrawal amount is $6.00</CardDescription>
+              <CardDescription>
+                {today
+                  ? "Minimum withdrawal amount is $6.00"
+                  : "Available on Sundays only"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -105,7 +145,7 @@ export default function Withdraw() {
                       <FormItem>
                         <FormLabel>Amount (USD)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" min="6" {...field} />
+                          <Input type="number" step="0.01" min="6" {...field} disabled={!today} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -118,7 +158,7 @@ export default function Withdraw() {
                       <FormItem>
                         <FormLabel>Bank Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Chase Bank" {...field} />
+                          <Input placeholder="e.g. Chase Bank" {...field} disabled={!today} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -131,7 +171,7 @@ export default function Withdraw() {
                       <FormItem>
                         <FormLabel>Account Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input placeholder="John Doe" {...field} disabled={!today} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -144,16 +184,16 @@ export default function Withdraw() {
                       <FormItem>
                         <FormLabel>Account Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="0000000000" {...field} />
+                          <Input placeholder="0000000000" {...field} disabled={!today} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={createWithdrawal.isPending || withdrawableBalance < 6}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={!today || createWithdrawal.isPending || withdrawableBalance < 6}
                   >
                     {createWithdrawal.isPending ? "Submitting..." : "Submit Request"}
                   </Button>

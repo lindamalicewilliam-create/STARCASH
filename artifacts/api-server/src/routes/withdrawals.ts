@@ -35,6 +35,13 @@ router.get("/", requireAuth, async (req, res) => {
 // POST /api/withdrawals
 router.post("/", requireAuth, async (req, res) => {
   const userId = req.user!.userId;
+
+  // Withdrawals are only accepted on Sundays (day 0)
+  if (new Date().getDay() !== 0) {
+    res.status(403).json({ error: "Payout requests are only accepted on Sundays." });
+    return;
+  }
+
   const { bankName, accountName, accountNumber, amount } = req.body;
 
   if (!bankName || !accountName || !accountNumber || !amount) {
