@@ -1,7 +1,7 @@
 import { useGetMyWithdrawals, useCreateWithdrawal, useGetDashboard } from "@workspace/api-client-react";
 import { formatMoney, formatDate } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -147,6 +147,7 @@ export default function Withdraw() {
                         <FormControl>
                           <Input type="number" step="0.01" min="6" {...field} disabled={!today} />
                         </FormControl>
+                        <FormDescription className="text-xs">Minimum withdrawal is $6.00</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
