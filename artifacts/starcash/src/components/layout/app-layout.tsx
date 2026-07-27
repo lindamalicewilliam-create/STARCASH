@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, Redirect } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { 
   LayoutDashboard, 
@@ -90,7 +90,7 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { user, isAdmin, isLoading } = useAuth();
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
 
   if (isLoading) {
     return (
@@ -101,8 +101,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   }
 
   if (!user) {
-    setLocation("/login");
-    return null;
+    return <Redirect to="/login" />;
   }
 
   return (
