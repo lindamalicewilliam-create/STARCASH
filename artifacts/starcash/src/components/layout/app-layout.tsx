@@ -41,9 +41,7 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
     <div className="flex flex-col h-full bg-sidebar border-r border-sidebar-border text-sidebar-foreground">
       <div className="p-6">
         <Link href={isAdmin ? "/admin" : "/dashboard"} className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xl leading-none">S</span>
-          </div>
+          <img src="/logo.png" alt="StarCash" className="w-8 h-8 object-contain" />
           <span className="text-xl font-bold tracking-tight">StarCash</span>
         </Link>
       </div>
@@ -115,9 +113,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         {/* Mobile Header */}
         <div className="md:hidden h-16 border-b border-border flex items-center px-4 justify-between bg-card">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xs">S</span>
-            </div>
+            <img src="/logo.png" alt="StarCash" className="w-6 h-6 object-contain" />
             <span className="font-bold">StarCash</span>
           </div>
           <div className="flex items-center gap-1">

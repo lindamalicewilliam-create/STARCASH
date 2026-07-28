@@ -57,9 +57,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center mx-auto mb-4">
-            <span className="text-primary-foreground font-bold text-2xl">S</span>
-          </div>
+          <img src="/logo.png" alt="StarCash" className="w-20 h-20 object-contain mx-auto mb-4 rounded-xl" />
           <h1 className="text-3xl font-bold tracking-tight">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">Sign in to your StarCash account</p>
         </div>
