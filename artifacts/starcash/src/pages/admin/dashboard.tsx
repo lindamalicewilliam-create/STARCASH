@@ -10,7 +10,7 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-6">
         <div className="h-8 w-64 bg-muted rounded animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <div key={i} className="h-32 bg-muted rounded-xl animate-pulse" />)}
         </div>
       </div>
@@ -24,7 +24,7 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground mt-1 text-sm">Platform-wide statistics and metrics.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue (Monthly)</CardTitle>
