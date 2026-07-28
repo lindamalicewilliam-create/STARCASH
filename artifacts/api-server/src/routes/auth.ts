@@ -59,7 +59,7 @@ router.post("/register", async (req, res) => {
   const [coupon] = await db
     .select()
     .from(couponsTable)
-    .where(eq(couponsTable.code, couponCode.toUpperCase()))
+    .where(eq(couponsTable.code, couponCode))
     .limit(1);
 
   if (!coupon) {

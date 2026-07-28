@@ -19,8 +19,8 @@ console.log('Admin user seeded');
 
 // Insert coupons
 const codes = [
-  'WELCOME001','WELCOME002','WELCOME003','WELCOME004','WELCOME005',
-  'PROMO2026A','PROMO2026B','PROMO2026C','TESTCOUPON'
+  'welcome@001','welcome#002','welcome$003','welcome!004','welcome*005',
+  'promo@2026a','promo#2026b','promo$2026c','test*coupon1'
 ];
 for (const code of codes) {
   await pool.query(`
