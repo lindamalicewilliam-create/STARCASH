@@ -1,0 +1,1 @@
+- [Imported app setup](imported-app-setup.md) — imported artifact metadata may exist on disk without a live artifact registry entry, so first-run workflows may need manual registration.

@@ -1,5 +1,9 @@
 import { ReactNode, createContext, useContext, useEffect } from "react";
-import { useGetMe, useLogout } from "@workspace/api-client-react";
+import {
+  getGetMeQueryKey,
+  useGetMe,
+  useLogout,
+} from "@workspace/api-client-react";
 import { getToken, removeToken } from "@/lib/auth";
 import { useLocation } from "wouter";
 
@@ -19,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { data: user, isLoading, error } = useGetMe({
     query: {
+      queryKey: getGetMeQueryKey(),
       enabled: !!token,
       retry: false,
     },

@@ -4,8 +4,8 @@ An affiliate earning web platform where users earn referral commissions by invit
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
-- `pnpm --filter @workspace/starcash run dev` — run the frontend (port 25131)
+- `PORT=8080 pnpm --filter @workspace/api-server run dev` — run the API server
+- `PORT=5000 BASE_PATH=/ pnpm --filter @workspace/starcash run dev` — run the frontend
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
