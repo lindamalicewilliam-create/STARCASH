@@ -10,6 +10,7 @@ An affiliate earning web platform where users earn referral commissions by invit
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm run build && pnpm start` — build and run the combined production server used by Railway
 - Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — JWT signing secret
 
 ## Stack
@@ -44,6 +45,13 @@ An affiliate earning web platform where users earn referral commissions by invit
 
 - **User side**: Register with coupon, get $1 welcome bonus, share referral link, earn $3 per successful referral, view dashboard with wallet stats, submit withdrawals
 - **Admin side**: Full user management (suspend/activate/delete/edit), coupon management (create/bulk generate/disable), withdrawal approval workflow, platform-wide analytics
+
+## Railway deployment
+
+- Railway deploys the repository root as one web service using `railway.json`.
+- The production API serves the compiled frontend and `/api/*` from the same origin.
+- Set `DATABASE_URL` from a Railway PostgreSQL service and a strong `SESSION_SECRET`.
+- See `RAILWAY.md` for the deployment steps and schema initialization command.
 
 ## User preferences
 
