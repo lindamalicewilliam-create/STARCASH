@@ -39,7 +39,7 @@ An affiliate earning web platform where users earn referral commissions by invit
 - Every new user requires a valid activation coupon code
 - Minimum withdrawal threshold is $6; requests stay pending until admin approves
 - Admin account seeded as: `admin@starcash.com` / `password123`
-- Test coupons seeded: `WELCOME001`–`WELCOME005`, `PROMO2026A`–`PROMO2026C`, `TESTCOUPON`
+- Test coupons seeded: `welcome@001`, `welcome#002`, `welcome$003`, `welcome!004`, `welcome*005`, `promo@2026a`, `promo#2026b`, `promo$2026c`, `test*coupon1`
 
 ## Product
 
