@@ -32,6 +32,16 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
+app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+
+  logger.error({ err, method: req.method, url: req.url }, "Unhandled API error");
+  res.status(500).json({ error: "Internal server error" });
+});
+
 if (process.env.NODE_ENV === "production") {
   const webRoot = path.resolve(__dirname, "../../starcash/dist/public");
 

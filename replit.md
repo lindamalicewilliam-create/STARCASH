@@ -38,7 +38,7 @@ An affiliate earning web platform where users earn referral commissions by invit
 - Welcome bonus ($1) auto-credited on registration; referral bonus ($3) credited to referrer on referred user activation
 - Every new user requires a valid activation coupon code
 - Minimum withdrawal threshold is $6; requests stay pending until admin approves
-- Admin account seeded as: `admin@starcash.com` / `password123`
+- Super admin accounts are created by running `ADMIN_EMAIL=... ADMIN_USERNAME=... ADMIN_PASSWORD=... node scripts/seed.mjs`; credentials are never stored in the repository.
 - Test coupons seeded: `welcome@001`, `welcome#002`, `welcome$003`, `welcome!004`, `welcome*005`, `promo@2026a`, `promo#2026b`, `promo$2026c`, `test*coupon1`
 
 ## Product
