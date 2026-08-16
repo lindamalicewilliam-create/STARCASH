@@ -35,6 +35,7 @@ export default function Login() {
       { data: values },
       {
         onSuccess: (data) => {
+          form.reset();
           setToken(data.token);
           if (data.user.role === "admin") {
             window.location.href = "/admin";
@@ -43,6 +44,7 @@ export default function Login() {
           }
         },
         onError: (error: any) => {
+          form.reset();
           toast({
             variant: "destructive",
             title: "Login Failed",
