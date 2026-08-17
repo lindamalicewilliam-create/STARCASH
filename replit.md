@@ -11,7 +11,8 @@ An affiliate earning web platform where users earn referral commissions by invit
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm run build && pnpm start` — build and run the combined production server used by Railway
-- Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — JWT signing secret
+- Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — JWT signing secret with at least 32 characters
+- Railway pre-deploy also requires `ADMIN_EMAIL`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` to seed the Super Admin in the Railway database.
 
 ## Stack
 
@@ -34,7 +35,7 @@ An affiliate earning web platform where users earn referral commissions by invit
 
 ## Architecture decisions
 
-- JWT stored in localStorage as `starcash_token`; custom-fetch in api-client-react adds `Authorization: Bearer <token>` header automatically
+- Auth uses a short-lived-compatible 7-day JWT in an HttpOnly `starcash_session` cookie, with the existing `starcash_token` localStorage bearer token retained for API-client compatibility. The server always rechecks the user's role and status from PostgreSQL.
 - Welcome bonus ($1) auto-credited on registration; referral bonus ($3) credited to referrer on referred user activation
 - Every new user requires a valid activation coupon code
 - Minimum withdrawal threshold is $6; requests stay pending until admin approves

@@ -1,11 +1,13 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import path from "node:path";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+app.set("trust proxy", process.env.NODE_ENV === "production" ? 1 : 0);
 
 app.use(
   pinoHttp({
@@ -26,7 +28,26 @@ app.use(
     },
   }),
 );
-app.use(cors());
+const configuredCorsOrigins = (process.env.CORS_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
+app.use(
+  cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      // Same-origin requests do not include an Origin header. Development
+      // tooling may use a separate origin, so it remains permissive there.
+      if (!origin || process.env.NODE_ENV !== "production") {
+        callback(null, true);
+        return;
+      }
+      callback(null, configuredCorsOrigins.includes(origin));
+    },
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

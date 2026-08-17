@@ -5,6 +5,10 @@
     "buildCommand": "pnpm run build"
   },
   "deploy": {
+    "preDeployCommand": [
+      "pnpm --filter @workspace/db run push",
+      "pnpm run db:seed"
+    ],
     "startCommand": "pnpm start",
     "healthcheckPath": "/api/healthz",
     "healthcheckTimeout": 300,

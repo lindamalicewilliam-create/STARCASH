@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRegister } from "@workspace/api-client-react";
 import { useLocation, Link } from "wouter";
-import { setToken } from "@/lib/auth";
+import { appPath, setToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -60,7 +60,7 @@ export default function Register() {
       {
         onSuccess: (data) => {
           setToken(data.token);
-          window.location.href = "/dashboard";
+           window.location.href = appPath("dashboard");
         },
         onError: (error: any) => {
           toast({

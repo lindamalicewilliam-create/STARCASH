@@ -5,3 +5,8 @@ export const setToken = (token: string) => localStorage.setItem("starcash_token"
 export const removeToken = () => localStorage.removeItem("starcash_token");
 
 setAuthTokenGetter(() => getToken());
+
+export function appPath(path: string): string {
+  const base = import.meta.env.BASE_URL || "/";
+  return `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+}

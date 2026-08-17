@@ -4,7 +4,7 @@ import {
   useGetMe,
   useLogout,
 } from "@workspace/api-client-react";
-import { getToken, removeToken } from "@/lib/auth";
+import { appPath, getToken, removeToken } from "@/lib/auth";
 import { useLocation } from "wouter";
 
 type AuthContextType = {
@@ -34,15 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (error) {
       removeToken();
-      setLocation("/login");
+      window.location.href = appPath("login");
     }
-  }, [error, setLocation]);
+  }, [error]);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSettled: () => {
         removeToken();
-        window.location.href = "/login";
+          window.location.href = appPath("login");
       },
     });
   };

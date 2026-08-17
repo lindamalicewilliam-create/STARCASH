@@ -9,15 +9,14 @@ const bcrypt = requireFromApi('bcryptjs');
 const pg = requireFromDb('pg');
 
 const { Pool } = pg;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-const adminEmail = process.env.ADMIN_EMAIL;
-const adminUsername = process.env.ADMIN_USERNAME;
-const adminPassword = process.env.ADMIN_PASSWORD;
-
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required');
 }
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+const adminUsername = process.env.ADMIN_USERNAME?.trim();
+const adminPassword = process.env.ADMIN_PASSWORD;
 if (!adminEmail || !adminUsername || !adminPassword) {
   throw new Error('ADMIN_EMAIL, ADMIN_USERNAME, and ADMIN_PASSWORD are required');
 }

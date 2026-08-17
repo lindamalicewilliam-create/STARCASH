@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLogin } from "@workspace/api-client-react";
 import { useLocation, Link } from "wouter";
-import { setToken } from "@/lib/auth";
+import { appPath, setToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -37,10 +37,10 @@ export default function Login() {
         onSuccess: (data) => {
           form.reset();
           setToken(data.token);
-          if (data.user.role === "admin") {
-            window.location.href = "/admin";
+           if (data.user.role === "admin") {
+             window.location.href = appPath("admin");
           } else {
-            window.location.href = "/dashboard";
+             window.location.href = appPath("dashboard");
           }
         },
         onError: (error: any) => {

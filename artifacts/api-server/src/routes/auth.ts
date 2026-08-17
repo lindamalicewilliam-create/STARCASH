@@ -7,9 +7,15 @@ import {
   transactionsTable,
   referralsTable,
 } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { signToken, requireAuth } from "../middlewares/auth";
+import { and, eq } from "drizzle-orm";
+import {
+  clearSessionCookie,
+  requireAuth,
+  setSessionCookie,
+  signToken,
+} from "../middlewares/auth";
 import { generateReferralCode } from "../lib/referralCode";
+import { getPublicOrigin } from "../lib/public-origin";
 
 const router = Router();
 
@@ -17,11 +23,18 @@ const WELCOME_BONUS = "1.00";
 const REFERRAL_BONUS = "3.00";
 const MIN_WITHDRAWAL = 6;
 
-function getReferralLink(code: string, host: string): string {
-  return `${host}/register?ref=${code}`;
+class RegistrationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RegistrationError";
+  }
 }
 
-function buildUserResponse(user: typeof usersTable.$inferSelect, host: string) {
+function getReferralLink(code: string, origin: string): string {
+  return `${origin}/register?ref=${code}`;
+}
+
+function buildUserResponse(user: typeof usersTable.$inferSelect, origin: string) {
   return {
     id: user.id,
     username: user.username,
@@ -31,7 +44,7 @@ function buildUserResponse(user: typeof usersTable.$inferSelect, host: string) {
     role: user.role,
     status: user.status,
     referralCode: user.referralCode,
-    referralLink: getReferralLink(user.referralCode, host),
+    referralLink: getReferralLink(user.referralCode, origin),
     walletBalance: Number(user.walletBalance),
     totalEarnings: Number(user.totalEarnings),
     pendingEarnings: Number(user.pendingEarnings),
@@ -44,9 +57,11 @@ function buildUserResponse(user: typeof usersTable.$inferSelect, host: string) {
 
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
-  const { fullName, username, email, phone, password, confirmPassword, referralCode, couponCode } = req.body;
+  const { fullName, username, phone, password, confirmPassword, referralCode, couponCode } = req.body;
+  const normalizedUsername = typeof username === "string" ? username.trim() : "";
+  const normalizedEmail = typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
 
-  if (!fullName || !username || !email || !phone || !password || !couponCode) {
+  if (!fullName || !normalizedUsername || !normalizedEmail || !phone || !password || !couponCode) {
     res.status(400).json({ error: "All fields are required" });
     return;
   }
@@ -76,12 +91,12 @@ router.post("/register", async (req, res) => {
   }
 
   // Check uniqueness
-  const [existingEmail] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+  const [existingEmail] = await db.select().from(usersTable).where(eq(usersTable.email, normalizedEmail)).limit(1);
   if (existingEmail) {
     res.status(400).json({ error: "Email already in use" });
     return;
   }
-  const [existingUsername] = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
+  const [existingUsername] = await db.select().from(usersTable).where(eq(usersTable.username, normalizedUsername)).limit(1);
   if (existingUsername) {
     res.status(400).json({ error: "Username already taken" });
     return;
@@ -104,74 +119,107 @@ router.post("/register", async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const [user] = await db
-    .insert(usersTable)
-    .values({
-      fullName,
-      username,
-      email,
-      phone,
-      passwordHash,
-      referralCode: newReferralCode,
-      referredBy: referrer?.id ?? null,
-      walletBalance: WELCOME_BONUS,
-      totalEarnings: WELCOME_BONUS,
-      withdrawableBalance: WELCOME_BONUS,
-    })
-    .returning();
+  let user: typeof usersTable.$inferSelect;
 
-  // Mark coupon as used
-  await db
-    .update(couponsTable)
-    .set({ status: "used", usedByUserId: user.id, updatedAt: new Date() })
-    .where(eq(couponsTable.id, coupon.id));
+  try {
+    user = await db.transaction(async (tx) => {
+      // Claim the coupon atomically so two concurrent registrations cannot
+      // both spend the same activation code.
+      const [claimedCoupon] = await tx
+        .update(couponsTable)
+        .set({ status: "used", updatedAt: new Date() })
+        .where(
+          and(
+            eq(couponsTable.id, coupon.id),
+            eq(couponsTable.status, "unused"),
+          ),
+        )
+        .returning();
 
-  // Welcome bonus transaction
-  await db.insert(transactionsTable).values({
-    userId: user.id,
-    type: "welcome_bonus",
-    amount: WELCOME_BONUS,
-    status: "successful",
-    description: "Welcome Bonus",
-  });
+      if (!claimedCoupon) {
+        throw new RegistrationError("Coupon has already been used or is disabled");
+      }
+      if (claimedCoupon.expiresAt && claimedCoupon.expiresAt < new Date()) {
+        throw new RegistrationError("Coupon has expired");
+      }
 
-  // Referral bonus for referrer
-  if (referrer) {
-    const newBalance = (Number(referrer.walletBalance) + Number(REFERRAL_BONUS)).toFixed(2);
-    const newEarnings = (Number(referrer.totalEarnings) + Number(REFERRAL_BONUS)).toFixed(2);
-    const newWithdrawable = (Number(referrer.withdrawableBalance) + Number(REFERRAL_BONUS)).toFixed(2);
-    await db.update(usersTable).set({
-      walletBalance: newBalance,
-      totalEarnings: newEarnings,
-      withdrawableBalance: newWithdrawable,
-      updatedAt: new Date(),
-    }).where(eq(usersTable.id, referrer.id));
+      const [createdUser] = await tx
+        .insert(usersTable)
+        .values({
+          fullName,
+          username: normalizedUsername,
+          email: normalizedEmail,
+          phone,
+          passwordHash,
+          referralCode: newReferralCode,
+          referredBy: referrer?.id ?? null,
+          walletBalance: WELCOME_BONUS,
+          totalEarnings: WELCOME_BONUS,
+          withdrawableBalance: WELCOME_BONUS,
+        })
+        .returning();
 
-    await db.insert(transactionsTable).values({
-      userId: referrer.id,
-      type: "referral_bonus",
-      amount: REFERRAL_BONUS,
-      status: "successful",
-      description: `Referral bonus for inviting ${username}`,
+      await tx
+        .update(couponsTable)
+        .set({ usedByUserId: createdUser.id, updatedAt: new Date() })
+        .where(eq(couponsTable.id, coupon.id));
+
+      await tx.insert(transactionsTable).values({
+        userId: createdUser.id,
+        type: "welcome_bonus",
+        amount: WELCOME_BONUS,
+        status: "successful",
+        description: "Welcome Bonus",
+      });
+
+      if (referrer) {
+        const newBalance = (Number(referrer.walletBalance) + Number(REFERRAL_BONUS)).toFixed(2);
+        const newEarnings = (Number(referrer.totalEarnings) + Number(REFERRAL_BONUS)).toFixed(2);
+        const newWithdrawable = (Number(referrer.withdrawableBalance) + Number(REFERRAL_BONUS)).toFixed(2);
+        await tx.update(usersTable).set({
+          walletBalance: newBalance,
+          totalEarnings: newEarnings,
+          withdrawableBalance: newWithdrawable,
+          updatedAt: new Date(),
+        }).where(eq(usersTable.id, referrer.id));
+
+        await tx.insert(transactionsTable).values({
+          userId: referrer.id,
+          type: "referral_bonus",
+          amount: REFERRAL_BONUS,
+          status: "successful",
+          description: `Referral bonus for inviting ${normalizedUsername}`,
+        });
+
+        await tx.insert(referralsTable).values({
+          referrerId: referrer.id,
+          referredUserId: createdUser.id,
+          bonusAmount: REFERRAL_BONUS,
+          status: "active",
+        });
+      }
+
+      return createdUser;
     });
-
-    await db.insert(referralsTable).values({
-      referrerId: referrer.id,
-      referredUserId: user.id,
-      bonusAmount: REFERRAL_BONUS,
-      status: "active",
-    });
+  } catch (error) {
+    if (error instanceof RegistrationError) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    throw error;
   }
 
-  const host = `${req.protocol}://${req.get("host")}`;
+  const origin = getPublicOrigin(req);
   const token = signToken({ userId: user.id, role: user.role });
-  res.status(201).json({ user: buildUserResponse(user, host), token });
+  setSessionCookie(res, token);
+  res.status(201).json({ user: buildUserResponse(user, origin), token });
 });
 
 // POST /api/auth/login
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
+  const email = typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  const { password } = req.body;
+  if (!email || typeof password !== "string" || !password) {
     res.status(400).json({ error: "Email and password required" });
     return;
   }
@@ -191,13 +239,15 @@ router.post("/login", async (req, res) => {
     return;
   }
 
-  const host = `${req.protocol}://${req.get("host")}`;
+  const origin = getPublicOrigin(req);
   const token = signToken({ userId: user.id, role: user.role });
-  res.json({ user: buildUserResponse(user, host), token });
+  setSessionCookie(res, token);
+  res.json({ user: buildUserResponse(user, origin), token });
 });
 
 // POST /api/auth/logout
 router.post("/logout", (_req, res) => {
+  clearSessionCookie(res);
   res.json({ ok: true });
 });
 
@@ -208,8 +258,7 @@ router.get("/me", requireAuth, async (req, res) => {
     res.status(404).json({ error: "User not found" });
     return;
   }
-  const host = `${req.protocol}://${req.get("host")}`;
-  res.json(buildUserResponse(user, host));
+  res.json(buildUserResponse(user, getPublicOrigin(req)));
 });
 
 export default router;

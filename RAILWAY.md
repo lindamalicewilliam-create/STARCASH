@@ -22,12 +22,30 @@ one public origin.
    pnpm --filter @workspace/db run push
    ```
 
+The repository's Railway pre-deploy command now runs the schema push and the
+idempotent seed script automatically. Set these variables on the Railway web
+service before deploying:
+
+- `DATABASE_URL`: reference the PostgreSQL service's `DATABASE_URL`
+- `SESSION_SECRET`: a strong random value with at least 32 characters
+- `ADMIN_EMAIL`: the Super Admin email to use in both environments
+- `ADMIN_USERNAME`: the Super Admin username
+- `ADMIN_PASSWORD`: the matching Super Admin password
+
+The seed script creates or updates that Super Admin and inserts the initial
+coupons without storing credentials in the repository. This is what makes the
+same explicitly configured admin credentials available in the Railway database;
+Replit Preview and Railway use separate databases and cannot share users unless
+the account is seeded/configured in both.
+
 Railway supplies `PORT` automatically. `BASE_PATH` is optional and defaults to
-`/`. Do not commit a real `.env` file or production credentials.
+`/`. Set `CORS_ORIGINS` only if a separate browser origin must call the API.
+Set `PUBLIC_APP_URL` when referral links must use a custom domain. Do not
+commit a real `.env` file or production credentials.
 
 ## Local production check
 
-With `DATABASE_URL` and `SESSION_SECRET` set:
+With `DATABASE_URL`, `SESSION_SECRET`, and the admin variables set:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -35,4 +53,6 @@ pnpm run build
 pnpm start
 ```
 
-Then check `http://localhost:$PORT/api/healthz`.
+Then check `http://localhost:$PORT/api/healthz`. The health check also verifies
+database connectivity, so a deployment with a missing or unreachable Railway
+database fails health checks instead of appearing healthy while login is broken.
