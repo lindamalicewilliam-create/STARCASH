@@ -37,13 +37,29 @@ app.use(
   cors({
     credentials: true,
     origin: (origin, callback) => {
-      // Same-origin requests do not include an Origin header. Development
-      // tooling may use a separate origin, so it remains permissive there.
-      if (!origin || process.env.NODE_ENV !== "production") {
+      // Requests without an Origin header are same-origin or non-browser
+      // callers and do not need CORS headers.
+      if (!origin) {
         callback(null, true);
         return;
       }
-      callback(null, configuredCorsOrigins.includes(origin));
+
+      if (process.env.NODE_ENV !== "production") {
+        callback(null, true);
+        return;
+      }
+
+      // Railway serves the React app and API from the same public origin.
+      // Same-origin requests do not need an Access-Control-Allow-Origin
+      // header, so an unset allowlist is correct for the combined service.
+      // Explicitly configured origins remain supported for a separately
+      // hosted frontend or trusted API client.
+      const publicAppOrigin = process.env.PUBLIC_APP_URL?.trim().replace(/\/+$/, "");
+      const allowed =
+        origin === publicAppOrigin ||
+        configuredCorsOrigins.includes(origin);
+
+      callback(null, allowed);
     },
   }),
 );

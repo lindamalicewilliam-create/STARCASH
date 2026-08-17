@@ -4,7 +4,7 @@ import {
   useGetMe,
   useLogout,
 } from "@workspace/api-client-react";
-import { appPath, getToken, removeToken } from "@/lib/auth";
+import { appPath, removeToken } from "@/lib/auth";
 import { useLocation } from "wouter";
 
 type AuthContextType = {
@@ -18,13 +18,11 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [_, setLocation] = useLocation();
-  const token = getToken();
+  const [location] = useLocation();
 
   const { data: user, isLoading, error } = useGetMe({
     query: {
       queryKey: getGetMeQueryKey(),
-      enabled: !!token,
       retry: false,
     },
   });
@@ -32,11 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useLogout();
 
   useEffect(() => {
-    if (error) {
+    const isPublicRoute = location === appPath("login") || location === appPath("register");
+    if (error && !isPublicRoute) {
       removeToken();
       window.location.href = appPath("login");
     }
-  }, [error]);
+  }, [error, location]);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -51,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading: !!token && isLoading,
+        isLoading,
         logout: handleLogout,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin",

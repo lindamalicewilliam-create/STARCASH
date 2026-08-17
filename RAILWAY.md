@@ -11,7 +11,7 @@ one public origin.
    directory.
 3. Railway will use `railway.json`:
    - Build: `pnpm run build`
-   - Start: `pnpm start`
+   - Start: `NODE_ENV=production pnpm start`
    - Health check: `/api/healthz`
 4. Add these variables to the web service:
    - `DATABASE_URL`: reference the PostgreSQL service's `DATABASE_URL`
@@ -39,9 +39,11 @@ Replit Preview and Railway use separate databases and cannot share users unless
 the account is seeded/configured in both.
 
 Railway supplies `PORT` automatically. `BASE_PATH` is optional and defaults to
-`/`. Set `CORS_ORIGINS` only if a separate browser origin must call the API.
-Set `PUBLIC_APP_URL` when referral links must use a custom domain. Do not
-commit a real `.env` file or production credentials.
+`/`. The combined service is same-origin, so `CORS_ORIGINS` can remain unset.
+Set it to a comma-separated allowlist only when a separately hosted frontend or
+trusted API client must call the API. Set `PUBLIC_APP_URL` when referral links
+must use a custom domain. Do not commit a real `.env` file or production
+credentials.
 
 ## Local production check
 
