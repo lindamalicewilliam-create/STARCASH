@@ -12,7 +12,7 @@ An affiliate earning web platform where users earn referral commissions by invit
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm run build && pnpm start` — build and run the combined production server used by Railway
 - Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — JWT signing secret with at least 32 characters
-- Railway pre-deploy also requires `ADMIN_EMAIL`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` to seed the Super Admin in the Railway database.
+- Railway pre-deploy seeds the Super Admin when `ADMIN_EMAIL`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` are all set; otherwise it skips seeding and logs the required manual command.
 
 ## Stack
 

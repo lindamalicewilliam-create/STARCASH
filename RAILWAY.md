@@ -22,15 +22,21 @@ one public origin.
    pnpm --filter @workspace/db run push
    ```
 
-The repository's Railway pre-deploy command now runs the schema push and the
-idempotent seed script automatically. Set these variables on the Railway web
-service before deploying:
+The repository's Railway pre-deploy command runs the schema push automatically.
+It also runs the idempotent seed script when all three of these variables are
+set on the Railway web service:
 
 - `DATABASE_URL`: reference the PostgreSQL service's `DATABASE_URL`
 - `SESSION_SECRET`: a strong random value with at least 32 characters
 - `ADMIN_EMAIL`: the Super Admin email to use in both environments
 - `ADMIN_USERNAME`: the Super Admin username
 - `ADMIN_PASSWORD`: the matching Super Admin password
+
+If the `ADMIN_*` variables are not set, the deployment continues after the
+schema push and logs that the Super Admin seed was skipped. Set all three
+variables and redeploy, or run the seed command manually from a Railway shell.
+Partial `ADMIN_*` configuration still fails the pre-deploy step so a typo does
+not result in an unusable admin account.
 
 The seed script creates or updates that Super Admin and inserts the initial
 coupons without storing credentials in the repository. This is what makes the

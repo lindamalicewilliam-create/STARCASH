@@ -5,7 +5,7 @@
     "buildCommand": "pnpm run build"
   },
   "deploy": {
-    "preDeployCommand": "pnpm --filter @workspace/db run push && pnpm run db:seed",
+    "preDeployCommand": "sh scripts/railway-predeploy.sh",
     "startCommand": "NODE_ENV=production pnpm start",
     "healthcheckPath": "/api/healthz",
     "healthcheckTimeout": 300,
